@@ -1,0 +1,19 @@
+{
+  "name": "closedzeppelin-contracts",
+  "version": "1.0.0",
+  "description": "ClosedZeppelin smart contracts suite.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ClosedZeppelin/closedzeppelin-contracts.git"
+  },
+  "keywords": [
+    "ethereum",
+    "solidity"
+  ],
+  "author": "amauryuh@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ClosedZeppelin/closedzeppelin-contracts/issues"
+  },
+  "homepage": "https://github.com/ClosedZeppelin/closedzeppelin-contracts#readme"
+}
