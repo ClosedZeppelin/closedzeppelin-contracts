@@ -17,7 +17,8 @@ contract AccountControlMock is AccountControl, AccessControl {
     }
 
     constructor() {
-        _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _addSigner(msg.sender, msg.sender, "owner");
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     function setRoleAdmin(uint64 roleId, uint64 adminRoleId) public {

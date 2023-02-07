@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// ClosedZeppelin Contracts v1.0.0 (access/AccessControl.sol)
+// ClosedZeppelin Contracts v1.0.1 (access/AccessControl.sol)
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Context.sol";

@@ -22,6 +22,12 @@ describe('AccessControl', function () {
     [admin, account1, account2, account3] = await ethers.getSigners();
   });
 
+  describe('admin account', () => {
+    it('is registered', async function () {
+      expect(await accountControl.accountOf(admin.address)).to.equal(admin.address);
+    });
+  });
+
   describe('addSigner', () => {
     it('non-admin cannot edit account signer', async function () {
       await expect(
@@ -68,7 +74,7 @@ describe('AccessControl', function () {
     it('returns zero-address for non-registered user', async function () {
       expect(await accountControl.accountOf(account3.address)).to.equal(zeroAccount);
     });
-    
+
     it('returns correct address for registered user', async function () {
       expect(await accountControl.accountOf(account2.address)).to.equal(account3.address);
     });
