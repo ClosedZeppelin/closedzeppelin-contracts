@@ -7,26 +7,65 @@ import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 abstract contract Multisig {
-    address[] internal signers;
-    bool private _usingMultisig;
+    // State to know if multisig call is being used
+    uint256 private constant _NOT_ENTERED = 1;
+    uint256 private constant _ENTERED = 2;
 
-    modifier requireMultisig(uint256 min) {
-        require(_usingMultisig, "multisig required");
-        require(signers.length >= min, "not enough signers");
+    uint256 private _status;
+
+    function _multisigBefore() private {
+        // On the first call to multisig, _status will be _NOT_ENTERED
+        require(_status != _ENTERED, "Multisig: reentrant call");
+
+        // Any calls to multisig after this point will fail
+        _status = _ENTERED;
+    }
+
+    function _multisigAfter() private {
+        // By storing the original value once again, a refund is triggered (see
+        // https://eips.ethereum.org/EIPS/eip-2200)
+        _status = _NOT_ENTERED;
+    }
+
+    modifier usingMultisig() {
+        _multisigBefore();
+        _;
+        _multisigAfter();
+    }
+
+    // Signers to allow contracts called by using multisig to perform data checks
+    address[] private _signers;
+
+    modifier resetSigners() {
+        address[] memory _value = _signers;
+        _;
+        _signers = _value;
+    }
+
+    function signers() internal view returns (address[] memory) {
+        return _signers;
+    }
+
+    // multisig is required
+    modifier requireSignatures(uint256 min) {
+        require(_status == _ENTERED, "multisig required");
+        require(_signers.length >= min, "not enough signers");
         _;
     }
 
-    function execute(bytes calldata execution, bytes[] memory signatures) public returns (bytes memory result) {
+    // executes a contract call by checking authorizers
+    function execute(bytes calldata execution, bytes[] memory signatures)
+        public
+        usingMultisig
+        resetSigners
+        returns (bytes memory result)
+    {
         bytes32 _hash = keccak256(execution);
-        signers = new address[](signatures.length);
+        _signers = new address[](signatures.length);
         for (uint256 i = 0; i < signatures.length; i++) {
-            signers[i] = _recoverSigner(_hash, signatures[i]);
+            _signers[i] = _recoverSigner(_hash, signatures[i]);
         }
-        _usingMultisig = true;
-        result = Address.functionDelegateCall(address(this), execution);
-        _usingMultisig = false;
-        signers = new address[](0);
-        return result;
+        return Address.functionDelegateCall(address(this), execution);
     }
 
     function _recoverSigner(bytes32 _ethSignedMessageHash, bytes memory _signature) private pure returns (address) {
