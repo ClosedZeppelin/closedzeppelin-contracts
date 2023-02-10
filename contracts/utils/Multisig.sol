@@ -27,7 +27,7 @@ abstract contract Multisig {
         _status = _NOT_ENTERED;
     }
 
-    modifier usingMultisig() {
+    modifier _usingMultisig() {
         _multisigBefore();
         _;
         _multisigAfter();
@@ -36,10 +36,10 @@ abstract contract Multisig {
     // Signers to allow contracts called by using multisig to perform data checks
     address[] private _signers;
 
-    modifier resetSigners() {
-        address[] memory _value = _signers;
+    modifier _resetSigners() {
+        address[] memory _tmp = _signers;
         _;
-        _signers = _value;
+        _signers = _tmp;
     }
 
     function signers() internal view returns (address[] memory) {
@@ -56,8 +56,8 @@ abstract contract Multisig {
     // executes a contract call by checking authorizers
     function execute(bytes calldata execution, bytes[] memory signatures)
         public
-        usingMultisig
-        resetSigners
+        _usingMultisig
+        _resetSigners
         returns (bytes memory)
     {
         bytes32 _hash = keccak256(execution);
