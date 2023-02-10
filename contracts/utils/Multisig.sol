@@ -48,8 +48,8 @@ abstract contract Multisig {
 
     // multisig is required
     modifier requireSignatures(uint256 min) {
-        require(_status == _ENTERED, "multisig required");
-        require(_signers.length >= min, "not enough signers");
+        require(_status == _ENTERED, "Multisig: required");
+        require(_signers.length >= min, "Multisig: not enough signers");
         _;
     }
 
@@ -58,7 +58,7 @@ abstract contract Multisig {
         public
         usingMultisig
         resetSigners
-        returns (bytes memory result)
+        returns (bytes memory)
     {
         bytes32 _hash = keccak256(execution);
         _signers = new address[](signatures.length);
@@ -83,7 +83,7 @@ abstract contract Multisig {
             uint8 v
         )
     {
-        require(sig.length == 65, "invalid signature length");
+        require(sig.length == 65, "Multisig: invalid signature length");
 
         assembly {
             /*

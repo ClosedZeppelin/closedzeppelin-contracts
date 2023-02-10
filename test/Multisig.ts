@@ -38,11 +38,11 @@ describe('ERC20', function () {
   });
 
   it('fails executing function directly', async () => {
-    await expect(multisig.func(100, 'data')).to.be.revertedWith('multisig required');
+    await expect(multisig.func(100, 'data')).to.be.revertedWith('Multisig: required');
   });
 
   it('fails executing function with less signatures', async () => {
-    await expect(multisig.execute(call, [sig1])).to.be.revertedWith('not enough signers');
+    await expect(multisig.execute(call, [sig1])).to.be.revertedWith('Multisig: not enough signers');
     expect(await multisig.currentSigners()).to.have.length(0);
   });
 
@@ -60,6 +60,6 @@ describe('ERC20', function () {
 
   it('succeeds executing call but fails calling directly ', async () => {
     await multisig.execute(call, [sig1, sig2, sig3]);
-    await expect(multisig.func(100, 'data2')).to.be.revertedWith('multisig required');
+    await expect(multisig.func(100, 'data2')).to.be.revertedWith('Multisig: required');
   });
 });
