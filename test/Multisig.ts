@@ -1,8 +1,7 @@
 import { expect } from 'chai';
 import { ethers, network } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { Contract, TypedDataDomain, TypedDataField } from 'ethers';
-import { TypedDataUtils } from 'ethers-eip712';
+import { Contract } from 'ethers';
 import ABI from '../artifacts/contracts/mocks/MultisigMock.sol/MultisigMock.json';
 
 describe('Multisig', function () {
