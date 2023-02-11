@@ -7,6 +7,7 @@ import ABI from '../artifacts/contracts/mocks/MultisigMock.sol/MultisigMock.json
 
 describe('Multisig', function () {
   let multisig: Contract;
+  let deadline: number;
 
   let admin: SignerWithAddress;
   let account1: SignerWithAddress;
@@ -18,6 +19,8 @@ describe('Multisig', function () {
     multisig = await MultisigMock.deploy();
     await multisig.deployed();
 
+    deadline = Math.floor(Date.now() / 1000) + 1000;
+
     [admin, account1, account2, account3] = await ethers.getSigners();
   });
 
@@ -27,52 +30,49 @@ describe('Multisig', function () {
     });
   });
 
-  // describe('func', () => {
-  //   let call: string;
-  //   let sig1: string;
-  //   let sig2: string;
-  //   let sig3: string;
+  describe('func', () => {
+    let call: string;
+    let sig1: string;
+    let sig2: string;
+    let sig3: string;
 
-  //   beforeEach(async () => {
-  //     const multisigMockAbi = new ethers.utils.Interface(ABI.abi);
-  //     call = multisigMockAbi.encodeFunctionData('func', [100, 'value']);
-  //     const callHash = ethers.utils.keccak256(call);
+    beforeEach(async () => {
+      const multisigMockAbi = new ethers.utils.Interface(ABI.abi);
+      call = multisigMockAbi.encodeFunctionData('func', [100, 'value']);
 
-  //     sig1 = await account1.signMessage(callHash);
-  //     sig2 = await account2.signMessage(callHash);
-  //     sig3 = await account3.signMessage(callHash);
-  //   });
+      const { domain, types, value } = getTypesData(call);
 
-  //   it('fails executing directly', async () => {
-  //     await expect(multisig.func(100, 'data')).to.be.revertedWith('Multisig: required');
-  //   });
+      sig1 = await account1._signTypedData(domain, types, value);
+      sig2 = await account2._signTypedData(domain, types, value);
+      sig3 = await account3._signTypedData(domain, types, value);
+    });
 
-  //   it('fails executing with less signatures', async () => {
-  //     await expect(multisig.execute(call, [sig1])).to.be.revertedWith('Multisig: not enough signers');
-  //     expect(await multisig.currentSigners()).to.have.length(0);
-  //   });
+    it('fails executing directly', async () => {
+      await expect(multisig.func(100, 'data')).to.be.revertedWith('Multisig: required');
+    });
 
-  //   it('succeeds with enough signers', async () => {
-  //     await multisig.execute(call, [sig1, sig2]);
-  //     expect(await multisig.data()).to.equal('value');
-  //     expect(await multisig.currentSigners()).to.have.length(0);
-  //   });
+    it('fails executing with less signatures', async () => {
+      await expect(multisig.execute(call, deadline, [sig1])).to.be.revertedWith(
+        'Multisig: not enough signers',
+      );
+      expect(await multisig.currentSigners()).to.have.length(0);
+    });
 
-  //   it('succeeds with more than enough signers', async () => {
-  //     await multisig.execute(call, [sig1, sig2, sig3]);
-  //     expect(await multisig.data()).to.equal('value');
-  //     expect(await multisig.currentSigners()).to.have.length(0);
-  //   });
+    it('succeeds with enough signers', async () => {
+      await multisig.execute(call, deadline, [sig1, sig2]);
+      expect(await multisig.data()).to.equal('value');
+      expect(await multisig.currentSigners()).to.have.length(0);
+    });
 
-  //   it('succeeds executing call but fails calling directly ', async () => {
-  //     await multisig.execute(call, [sig1, sig2, sig3]);
-  //     await expect(multisig.func(100, 'data2')).to.be.revertedWith('Multisig: required');
-  //   });
-  // });
+    it('succeeds with more than enough signers', async () => {
+      await multisig.execute(call, deadline, [sig1, sig2, sig3]);
+      expect(await multisig.data()).to.equal('value');
+      expect(await multisig.currentSigners()).to.have.length(0);
+    });
+  });
 
   describe('check', () => {
     let call: string;
-    let deadline: number;
 
     let sig1: string;
     let sig2: string;
@@ -82,31 +82,8 @@ describe('Multisig', function () {
       const multisigMockAbi = new ethers.utils.Interface(ABI.abi);
 
       call = multisigMockAbi.encodeFunctionData('check', [account1.address, account2.address]);
-      deadline = Math.floor(Date.now() / 1000) + 1000;
 
-      const domain: TypedDataDomain = {
-        chainId: network.config.chainId,
-        name: 'MultisigMock',
-        verifyingContract: multisig.address,
-        version: '1',
-      };
-
-      // Execute(uint256 nonce,uint256 deadline)
-      const types: Record<string, TypedDataField[]> = {
-        Execute: [
-          { name: 'call', type: 'bytes32' },
-          { name: 'sender', type: 'address' },
-          { name: 'nonce', type: 'uint256' },
-          { name: 'deadline', type: 'uint256' },
-        ],
-      };
-
-      const value: Record<string, any> = {
-        call: ethers.utils.keccak256(call),
-        sender: admin.address,
-        nonce: 0,
-        deadline: deadline,
-      };
+      const { domain, types, value } = getTypesData(call);
 
       sig1 = await account1._signTypedData(domain, types, value);
       sig2 = await account2._signTypedData(domain, types, value);
@@ -123,13 +100,52 @@ describe('Multisig', function () {
       );
     });
 
-    // beforeEach(async () => {
-    //   await ethers.provider.send("evm_increaseTime", [2 * 60 * 60]);
-    // });
+    it('succeeds with correct signers', async () => {
+      await multisig.execute(call, deadline, [sig1, sig2]);
+      expect(await multisig.data()).to.equal('signers are correct');
+    });
 
-    // it('succeeds with correct signers', async () => {
-    //   await multisig.execute(call, [sig1, sig2]);
-    //   expect(await multisig.data()).to.equal('');
-    // });
+    it('fails sending execution two times with same signatures', async () => {
+      await multisig.execute(call, deadline, [sig1, sig2]);
+
+      expect(await multisig.nonces(admin.address)).to.equal(1);
+
+      await expect(multisig.execute(call, deadline, [sig1, sig2])).to.be.revertedWith(
+        'invalid signer 1',
+      );
+    });
+
+    it('fails execution with exceeded deadline', async () => {
+      await ethers.provider.send('evm_increaseTime', [1000]);
+
+      await expect(multisig.execute(call, deadline, [sig1, sig2])).to.be.revertedWith(
+        'Multisig: execution expired',
+      );
+    });
+  });
+
+  const getTypesData = (call: string, nonce: number = 0) => ({
+    domain: {
+      chainId: network.config.chainId,
+      name: 'MultisigMock',
+      verifyingContract: multisig.address,
+      version: '1',
+    },
+
+    types: {
+      Execute: [
+        { name: 'call', type: 'bytes32' },
+        { name: 'sender', type: 'address' },
+        { name: 'nonce', type: 'uint256' },
+        { name: 'deadline', type: 'uint256' },
+      ],
+    },
+
+    value: {
+      call: ethers.utils.keccak256(call),
+      sender: admin.address,
+      nonce,
+      deadline,
+    },
   });
 });
