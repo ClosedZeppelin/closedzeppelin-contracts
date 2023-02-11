@@ -1,13 +1,23 @@
 // SPDX-License-Identifier: MIT
-// ClosedZeppelin Contracts v1.0.1 (utils/Context.sol)
+// ClosedZeppelin Contracts v1.0.1 (utils/Multisig.sol)
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
-abstract contract Multisig {
-    // State to know if multisig call is being used
+abstract contract Multisig is Context, EIP712 {
+    using Counters for Counters.Counter;
+
+    mapping(address => Counters.Counter) private _nonces;
+
+    bytes32 private immutable _EXECUTION_TYPEHASH =
+        keccak256("Execute(bytes32 call,address sender,uint256 nonce,uint256 deadline)");
+
+    // status to know if multisig call is being used
     uint256 private constant _NOT_ENTERED = 1;
     uint256 private constant _ENTERED = 2;
 
@@ -33,17 +43,14 @@ abstract contract Multisig {
         _multisigAfter();
     }
 
-    // Signers to allow contracts called by using multisig to perform data checks
+    // signers access to allow contracts called by using multisig to perform data checks
     address[] private _signers;
 
     modifier _resetSigners() {
         address[] memory _tmp = _signers;
         _;
         _signers = _tmp;
-    }
-
-    function signers() internal view returns (address[] memory) {
-        return _signers;
+        _nonces[_msgSender()].increment();
     }
 
     // multisig is required
@@ -53,56 +60,49 @@ abstract contract Multisig {
         _;
     }
 
-    // executes a contract call by checking authorizers
-    function execute(bytes calldata execution, bytes[] memory signatures)
-        public
-        _usingMultisig
-        _resetSigners
-        returns (bytes memory)
-    {
-        bytes32 _hash = keccak256(execution);
+    // disable multisig execution for function
+    modifier disableMultisig() {
+        require(_status == _NOT_ENTERED, "Multisig: disabled");
+        _;
+    }
+
+    constructor(string memory name) EIP712(name, "1") {}
+
+    function execute(
+        bytes calldata execution,
+        uint256 deadline,
+        bytes[] memory signatures
+    ) public _usingMultisig _resetSigners returns (bytes memory) {
+        require(block.timestamp <= deadline, "Multisig: execution expired");
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                _EXECUTION_TYPEHASH,
+                keccak256(execution),
+                _msgSender(),
+                _nonces[_msgSender()].current(),
+                deadline
+            )
+        );
+
+        bytes32 digest = _hashTypedDataV4(structHash);
+
         _signers = new address[](signatures.length);
-        for (uint256 i = 0; i < signatures.length; i++) {
-            _signers[i] = _recoverSigner(_hash, signatures[i]);
+        for (uint256 i = 0; i < _signers.length; i++) {
+            _signers[i] = ECDSA.recover(digest, signatures[i]);
         }
         return Address.functionDelegateCall(address(this), execution);
     }
 
-    function _recoverSigner(bytes32 _ethSignedMessageHash, bytes memory _signature) private pure returns (address) {
-        (bytes32 r, bytes32 s, uint8 v) = _splitSignature(_signature);
-
-        return ecrecover(_ethSignedMessageHash, v, r, s);
+    function signers(uint256 index) internal view returns (address) {
+        return _signers[index];
     }
 
-    function _splitSignature(bytes memory sig)
-        private
-        pure
-        returns (
-            bytes32 r,
-            bytes32 s,
-            uint8 v
-        )
-    {
-        require(sig.length == 65, "Multisig: invalid signature length");
+    function signers() internal view returns (address[] memory) {
+        return _signers;
+    }
 
-        assembly {
-            /*
-            First 32 bytes stores the length of the signature
-
-            add(sig, 32) = pointer of sig + 32
-            effectively, skips first 32 bytes of signature
-
-            mload(p) loads next 32 bytes starting at the memory address p into memory
-            */
-
-            // first 32 bytes, after the length prefix
-            r := mload(add(sig, 32))
-            // second 32 bytes
-            s := mload(add(sig, 64))
-            // final byte (first byte of the next 32 bytes)
-            v := byte(0, mload(add(sig, 96)))
-        }
-
-        // implicitly return (r, s, v)
+    function nonces(address sender) public view virtual returns (uint256) {
+        return _nonces[sender].current();
     }
 }

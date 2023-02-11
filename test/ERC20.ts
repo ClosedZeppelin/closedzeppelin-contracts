@@ -22,7 +22,7 @@ describe('ERC20', function () {
 
     // deploy erc20
     const ERC20 = await ethers.getContractFactory('ERC20Mock');
-    token = await ERC20.deploy('Token Name', 100, 'Token Symbol', 0, accounts.address);
+    token = await ERC20.deploy('Token Name', 100, 'Token Symbol', accounts.address);
     await token.deployed();
 
     [admin, account1, account2, account3] = await ethers.getSigners();
