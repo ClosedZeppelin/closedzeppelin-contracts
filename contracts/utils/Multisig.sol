@@ -23,6 +23,9 @@ abstract contract Multisig is Context, EIP712 {
 
     uint256 private _status;
 
+    // signers access to allow contracts called by using multisig to perform data checks
+    address[] private _signers;
+
     function _multisigBefore() private {
         // On the first call to multisig, _status will be _NOT_ENTERED
         require(_status != _ENTERED, "Multisig: reentrant call");
@@ -35,22 +38,14 @@ abstract contract Multisig is Context, EIP712 {
         // By storing the original value once again, a refund is triggered (see
         // https://eips.ethereum.org/EIPS/eip-2200)
         _status = _NOT_ENTERED;
+        _signers = new address[](0);
+        _nonces[_msgSender()].increment();
     }
 
     modifier _usingMultisig() {
         _multisigBefore();
         _;
         _multisigAfter();
-    }
-
-    // signers access to allow contracts called by using multisig to perform data checks
-    address[] private _signers;
-
-    modifier _resetSigners() {
-        address[] memory _tmp = _signers;
-        _;
-        _signers = _tmp;
-        _nonces[_msgSender()].increment();
     }
 
     // multisig is required
@@ -72,7 +67,7 @@ abstract contract Multisig is Context, EIP712 {
         bytes calldata execution,
         uint256 deadline,
         bytes[] memory signatures
-    ) public _usingMultisig _resetSigners returns (bytes memory) {
+    ) public _usingMultisig returns (bytes memory) {
         require(block.timestamp <= deadline, "Multisig: execution expired");
 
         bytes32 structHash = keccak256(
