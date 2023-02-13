@@ -20,6 +20,18 @@ abstract contract AccountControl is IAccountControl, ERC165 {
         return _accounts[signer];
     }
 
+    function addSigner(
+        address signer,
+        address account,
+        string memory _metadata
+    ) external virtual returns (bool) {
+        return _addSigner(signer, account, _metadata);
+    }
+
+    function removeSigner(address signer, string memory _metadata) external virtual returns (bool) {
+        return _removeSigner(signer, _metadata);
+    }
+
     function _addSigner(
         address signer,
         address account,

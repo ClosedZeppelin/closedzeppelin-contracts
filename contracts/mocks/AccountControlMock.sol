@@ -29,12 +29,14 @@ contract AccountControlMock is AccountControl, AccessControl {
         address signer,
         address account,
         string memory _metadata
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
+    ) external virtual override onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
         return _addSigner(signer, account, _metadata);
     }
 
     function removeSigner(address signer, string memory _metadata)
         external
+        virtual
+        override
         onlyRole(DEFAULT_ADMIN_ROLE)
         returns (bool)
     {
