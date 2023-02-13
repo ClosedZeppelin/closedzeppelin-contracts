@@ -8,22 +8,31 @@ import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-abstract contract Multisig is Context, EIP712 {
+abstract contract Multisig is Context, EIP712, ERC165 {
     using Counters for Counters.Counter;
 
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(Multisig).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    // Nonces to avoid using same signature more than one time
     mapping(address => Counters.Counter) private _nonces;
 
     bytes32 private immutable _EXECUTION_TYPEHASH =
         keccak256("Execute(bytes32 call,address sender,uint256 nonce,uint256 deadline)");
 
-    // status to know if multisig call is being used
-    uint256 private constant _NOT_ENTERED = 1;
-    uint256 private constant _ENTERED = 2;
+    // Status to know if multisig call is being executed
+    uint256 private constant _NOT_ENTERED = 0;
+    uint256 private constant _ENTERED = 1;
 
     uint256 private _status;
 
-    // signers access to allow contracts called by using multisig to perform data checks
+    // Signers accessibility to allow contracts called by using multisig to perform data checks
     address[] private _signers;
 
     function _multisigBefore() private {
@@ -48,20 +57,20 @@ abstract contract Multisig is Context, EIP712 {
         _multisigAfter();
     }
 
-    // multisig is required
+    // Multisig is required
     modifier requireSignatures(uint256 min) {
         require(_status == _ENTERED, "Multisig: required");
         require(_signers.length >= min, "Multisig: not enough signers");
         _;
     }
 
-    // disable multisig execution for function
+    // Disable multisig execution for function
     modifier disableMultisig() {
         require(_status == _NOT_ENTERED, "Multisig: disabled");
         _;
     }
 
-    constructor(string memory name) EIP712(name, "1") {}
+    constructor(string memory name) EIP712(name, "1") {} // Setup version
 
     function execute(
         bytes calldata execution,
@@ -85,16 +94,17 @@ abstract contract Multisig is Context, EIP712 {
         _signers = new address[](signatures.length);
         for (uint256 i = 0; i < _signers.length; i++) {
             _signers[i] = ECDSA.recover(digest, signatures[i]);
+            require(i == 0 || _signers[i] > _signers[i - 1], "Multisig: unsorted signers"); // Avoid repeated signatures
         }
         return Address.functionDelegateCall(address(this), execution);
     }
 
-    function signers(uint256 index) internal view returns (address) {
-        return _signers[index];
-    }
-
     function signers() internal view returns (address[] memory) {
         return _signers;
+    }
+
+    function signers(uint256 index) internal view returns (address) {
+        return _signers[index];
     }
 
     function nonces(address sender) public view virtual returns (uint256) {
