@@ -24,11 +24,11 @@ abstract contract AccountControl is IAccountControl, ERC165 {
         address signer,
         address account,
         string memory _metadata
-    ) external virtual returns (bool) {
+    ) external virtual {
         return _addSigner(signer, account, _metadata);
     }
 
-    function removeSigner(address signer, string memory _metadata) external virtual returns (bool) {
+    function removeSigner(address signer, string memory _metadata) external virtual {
         return _removeSigner(signer, _metadata);
     }
 
@@ -36,16 +36,14 @@ abstract contract AccountControl is IAccountControl, ERC165 {
         address signer,
         address account,
         string memory _metadata
-    ) internal virtual returns (bool) {
+    ) internal virtual {
         _accounts[signer] = account;
         if (signer == account) emit AccountCreated(account, msg.sender, _metadata);
         else emit SignerAdded(signer, account, msg.sender, _metadata);
-        return true;
     }
 
-    function _removeSigner(address signer, string memory _metadata) internal virtual returns (bool) {
+    function _removeSigner(address signer, string memory _metadata) internal virtual {
         delete _accounts[signer];
         emit SignerRemoved(signer, msg.sender, _metadata);
-        return true;
     }
 }

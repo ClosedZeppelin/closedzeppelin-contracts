@@ -84,7 +84,7 @@ contract Identity is AccessControl, AccountControl, Multisig {
         requireSignatures(_bcluster)
         signersWithRole(getRoleAdmin(role))
     {
-        return _grantRole(role, account);
+        _grantRole(role, account);
     }
 
     function revokeRole(uint64 role, address account)
@@ -94,7 +94,7 @@ contract Identity is AccessControl, AccountControl, Multisig {
         requireSignatures(_bcluster)
         signersWithRole(getRoleAdmin(role))
     {
-        return _revokeRole(role, account);
+        _revokeRole(role, account);
     }
 
     // account control
@@ -103,8 +103,8 @@ contract Identity is AccessControl, AccountControl, Multisig {
         address signer,
         address account,
         string memory _metadata
-    ) public virtual override requireSignatures(_scluster) signersWithRole(MANAGER_ROLE) returns (bool) {
-        return _addSigner(signer, account, _metadata);
+    ) public virtual override requireSignatures(_scluster) signersWithRole(MANAGER_ROLE) {
+        _addSigner(signer, account, _metadata);
     }
 
     function removeSigner(address signer, string memory _metadata)
@@ -112,9 +112,8 @@ contract Identity is AccessControl, AccountControl, Multisig {
         virtual
         override
         onlyRole(MANAGER_ROLE | OPERATOR_ROLE)
-        returns (bool)
     {
-        return _removeSigner(signer, _metadata);
+        _removeSigner(signer, _metadata);
     }
 
     // bulk actions
