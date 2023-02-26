@@ -16,10 +16,16 @@ abstract contract AccountControl is IAccountControl, ERC165 {
         return interfaceId == type(IAccountControl).interfaceId || super.supportsInterface(interfaceId);
     }
 
+    /**
+     * @dev See {IAccountControl-accountOf}.
+     */
     function accountOf(address signer) public view returns (address) {
         return _accounts[signer];
     }
 
+    /**
+     * @dev See {IAccountControl-addSigner}.
+     */
     function addSigner(
         address signer,
         address account,
@@ -28,10 +34,19 @@ abstract contract AccountControl is IAccountControl, ERC165 {
         return _addSigner(signer, account, _metadata);
     }
 
+    /**
+     * @dev See {IAccountControl-removeSigner}.
+     */
     function removeSigner(address signer, string memory _metadata) external virtual {
         return _removeSigner(signer, _metadata);
     }
 
+    /**
+     * @dev Adds a new signer to an account.
+     * @param signer The address of the new signer.
+     * @param account The address of the account to which the signer will be added.
+     * @param _metadata Additional metadata associated with the signer addition.
+     */
     function _addSigner(
         address signer,
         address account,
@@ -42,6 +57,11 @@ abstract contract AccountControl is IAccountControl, ERC165 {
         else emit SignerAdded(signer, account, msg.sender, _metadata);
     }
 
+    /**
+     * @dev Removes a signer from an account.
+     * @param signer The address of the signer to remove.
+     * @param _metadata Additional metadata associated with the signer removal.
+     */
     function _removeSigner(address signer, string memory _metadata) internal virtual {
         delete _accounts[signer];
         emit SignerRemoved(signer, msg.sender, _metadata);
