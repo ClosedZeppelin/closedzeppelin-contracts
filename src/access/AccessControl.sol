@@ -2,8 +2,8 @@
 // ClosedZeppelin Contracts v1.0.1 (access/AccessControl.sol)
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "openzeppelin-contracts/contracts/utils/Context.sol";
+import "openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 import "./IAccessControl.sol";
 
 abstract contract AccessControl is Context, IAccessControl, ERC165 {

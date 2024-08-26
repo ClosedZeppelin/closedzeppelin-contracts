@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 import "./IAccountControl.sol";
 
 abstract contract AccountControl is IAccountControl, ERC165 {
@@ -26,11 +26,7 @@ abstract contract AccountControl is IAccountControl, ERC165 {
     /**
      * @dev See {IAccountControl-addSigner}.
      */
-    function addSigner(
-        address signer,
-        address account,
-        string memory _metadata
-    ) external virtual {
+    function addSigner(address signer, address account, string memory _metadata) external virtual {
         return _addSigner(signer, account, _metadata);
     }
 
@@ -47,11 +43,7 @@ abstract contract AccountControl is IAccountControl, ERC165 {
      * @param account The address of the account to which the signer will be added.
      * @param _metadata Additional metadata associated with the signer addition.
      */
-    function _addSigner(
-        address signer,
-        address account,
-        string memory _metadata
-    ) internal virtual {
+    function _addSigner(address signer, address account, string memory _metadata) internal virtual {
         _accounts[signer] = account;
         if (signer == account) emit AccountCreated(account, msg.sender, _metadata);
         else emit SignerAdded(signer, account, msg.sender, _metadata);
