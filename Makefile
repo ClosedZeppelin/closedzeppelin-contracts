@@ -6,16 +6,16 @@ GIT_NEXT_PATCH=$(shell echo $(GIT_VERSION) | awk -F. '{print $$1"."$$2"."$$3+1}'
 GIT_NEXT_MINOR=$(shell echo $(GIT_VERSION) | awk -F. '{print $$1"."$$2+1".0"}')
 GIT_NEXT_MAJOR=$(shell echo $(GIT_VERSION) | awk -F. '{print $$1+1".0.0"}')
 
-commit:
-	@git commit -am "Version $(version)"
-
+# Tag a new version
 tag:
 	@git tag $(version)
 
+# Push a new tag
 push:
 	@git push origin ${GIT_BRANCH} $(version)
 
-publish: commit tag push
+# Publish a new version
+publish: tag push
 
 # Bug fixes
 patch:
@@ -30,5 +30,5 @@ major:
 	@make publish version=${GIT_NEXT_MAJOR}
 
 # Release a new version
-release:
+release: 
 	@make publish version=${GIT_VERSION}-release
