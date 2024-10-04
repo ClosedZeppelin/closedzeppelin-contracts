@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {AccessControlMock} from "../src/mocks/AccessControlMock.sol";
+import {AccessControlMock} from "./mocks/AccessControlMock.sol";
 
 contract AccessControlTest is Test {
     AccessControlMock public accessControl;
@@ -33,10 +33,7 @@ contract AccessControlTest is Test {
     function testDefaultAdmin() public view {
         assertTrue(accessControl.hasRole(DEFAULT_ADMIN_ROLE, admin));
         assertEq(accessControl.getRoleAdmin(ROLE), DEFAULT_ADMIN_ROLE);
-        assertEq(
-            accessControl.getRoleAdmin(DEFAULT_ADMIN_ROLE),
-            DEFAULT_ADMIN_ROLE
-        );
+        assertEq(accessControl.getRoleAdmin(DEFAULT_ADMIN_ROLE), DEFAULT_ADMIN_ROLE);
     }
 
     function testGranting() public {

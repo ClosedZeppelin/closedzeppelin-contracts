@@ -8,17 +8,9 @@ import "openzeppelin-contracts/contracts/utils/Context.sol";
 import "openzeppelin-contracts/contracts/utils/Counters.sol";
 import "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 import "openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
-import "openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 
-abstract contract Multisig is Context, EIP712, ERC165 {
+abstract contract Multisig is Context, EIP712 {
     using Counters for Counters.Counter;
-
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(Multisig).interfaceId || super.supportsInterface(interfaceId);
-    }
 
     // Nonces to avoid using same signature more than one time
     mapping(address => Counters.Counter) private _nonces;

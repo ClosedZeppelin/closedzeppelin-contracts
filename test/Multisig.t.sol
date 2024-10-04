@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {MultisigMock} from "../src/mocks/MultisigMock.sol";
+import {MultisigMock} from "./mocks/MultisigMock.sol";
 import {Utils} from "./utils.t.sol";
 
 contract MultisigTest is Test {
@@ -152,7 +152,13 @@ contract MultisigTest is Test {
         );
 
         bytes32 structHash = keccak256(
-            abi.encode(keccak256("Execute(bytes32 call,address sender,uint256 nonce,uint256 deadline)"), keccak256(call), admin, multisig.nonces(admin), deadline)
+            abi.encode(
+                keccak256("Execute(bytes32 call,address sender,uint256 nonce,uint256 deadline)"),
+                keccak256(call),
+                admin,
+                multisig.nonces(admin),
+                deadline
+            )
         );
 
         bytes32 hash = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));

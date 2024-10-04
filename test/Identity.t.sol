@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Identity} from "../src/collection/Identity.sol";
+import {Identity} from "../contracts/collection/Identity.sol";
 import {Utils} from "./utils.t.sol";
 
 contract IdentityTest is Test {

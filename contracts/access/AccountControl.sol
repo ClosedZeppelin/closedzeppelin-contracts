@@ -3,18 +3,10 @@
 
 pragma solidity ^0.8.0;
 
-import "openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 import "./IAccountControl.sol";
 
-abstract contract AccountControl is IAccountControl, ERC165 {
+abstract contract AccountControl is IAccountControl {
     mapping(address => address) private _accounts;
-
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IAccountControl).interfaceId || super.supportsInterface(interfaceId);
-    }
 
     /**
      * @dev See {IAccountControl-accountOf}.

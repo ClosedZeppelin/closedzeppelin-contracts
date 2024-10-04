@@ -2,9 +2,9 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {ERC20Mock} from "../src/mocks/ERC20Mock.sol";
-import {AccountControlMock} from "../src/mocks/AccountControlMock.sol";
-import {IAccountControl} from "../src/access/IAccountControl.sol";
+import {ERC20Mock} from "./mocks/ERC20Mock.sol";
+import {AccountControlMock} from "./mocks/AccountControlMock.sol";
+import {IAccountControl} from "../contracts/access/IAccountControl.sol";
 
 contract ERC20Test is Test {
     ERC20Mock public token;
@@ -23,12 +23,7 @@ contract ERC20Test is Test {
         accounts = new AccountControlMock();
 
         // deploy erc20
-        token = new ERC20Mock(
-            "Token Name",
-            100,
-            "Token Symbol",
-            IAccountControl(address(accounts))
-        );
+        token = new ERC20Mock("Token Name", 100, "Token Symbol", IAccountControl(address(accounts)));
 
         admin = address(this);
         account1 = address(0x1);

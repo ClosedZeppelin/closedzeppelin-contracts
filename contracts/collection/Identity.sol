@@ -23,24 +23,6 @@ contract Identity is AccessControl, AccountControl, Multisig {
     uint64 public constant OPERATOR_ROLE = 1 << 3;
 
     /**
-     * @dev Check if the contract supports the given interface.
-     * @param interfaceId The interface identifier.
-     * @return True if the interface is supported, false otherwise.
-     */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(AccessControl, AccountControl, Multisig)
-        returns (bool)
-    {
-        return
-            AccessControl.supportsInterface(interfaceId) ||
-            AccountControl.supportsInterface(interfaceId) ||
-            Multisig.supportsInterface(interfaceId);
-    }
-
-    /**
      * @dev Forward the accountOf as msg.sender.
      * @return The address of the sender account.
      */
@@ -109,13 +91,10 @@ contract Identity is AccessControl, AccountControl, Multisig {
      * @param role The role to grant.
      * @param account The address to grant the role to.
      */
-    function grantRole(uint64 role, address account)
-        public
-        virtual
-        override
-        requireSignatures(_bcluster)
-        signersWithRole(getRoleAdmin(role))
-    {
+    function grantRole(
+        uint64 role,
+        address account
+    ) public virtual override requireSignatures(_bcluster) signersWithRole(getRoleAdmin(role)) {
         _grantRole(role, account);
     }
 
@@ -126,13 +105,10 @@ contract Identity is AccessControl, AccountControl, Multisig {
      * @param role The role to revoke.
      * @param account The address to revoke the role from.
      */
-    function revokeRole(uint64 role, address account)
-        public
-        virtual
-        override
-        requireSignatures(_bcluster)
-        signersWithRole(getRoleAdmin(role))
-    {
+    function revokeRole(
+        uint64 role,
+        address account
+    ) public virtual override requireSignatures(_bcluster) signersWithRole(getRoleAdmin(role)) {
         _revokeRole(role, account);
     }
 
@@ -159,12 +135,10 @@ contract Identity is AccessControl, AccountControl, Multisig {
      * @param signer The address of the signer to remove.
      * @param _metadata The metadata associated with the signer.
      */
-    function removeSigner(address signer, string memory _metadata)
-        public
-        virtual
-        override
-        onlyRole(MANAGER_ROLE | OPERATOR_ROLE)
-    {
+    function removeSigner(
+        address signer,
+        string memory _metadata
+    ) public virtual override onlyRole(MANAGER_ROLE | OPERATOR_ROLE) {
         _removeSigner(signer, _metadata);
     }
 
@@ -177,11 +151,7 @@ contract Identity is AccessControl, AccountControl, Multisig {
      * @param account The accounts associated with the signers.
      * @param _metadata The metadata associated with the signers.
      */
-    function _bulkAddSigner(
-        address[] memory signer,
-        address[] memory account,
-        string memory _metadata
-    ) internal {
+    function _bulkAddSigner(address[] memory signer, address[] memory account, string memory _metadata) internal {
         require(signer.length <= 100, "Identity: bulk capacity exceded");
         require(signer.length == account.length, "Identity: bulk arrays must have same length");
         for (uint256 i = 0; i < signer.length; i++) {

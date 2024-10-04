@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {AccountControlMock} from "../src/mocks/AccountControlMock.sol";
+import {AccountControlMock} from "./mocks/AccountControlMock.sol";
 
 contract AccountControlTest is Test {
     AccountControlMock public accountControl;

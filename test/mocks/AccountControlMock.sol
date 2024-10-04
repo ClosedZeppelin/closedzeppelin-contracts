@@ -2,20 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import "../access/AccessControl.sol";
-import "../access/AccountControl.sol";
+import "../../contracts/access/AccessControl.sol";
+import "../../contracts/access/AccountControl.sol";
 
 contract AccountControlMock is AccountControl, AccessControl {
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(AccessControl, AccountControl)
-        returns (bool)
-    {
-        return AccessControl.supportsInterface(interfaceId) || AccountControl.supportsInterface(interfaceId);
-    }
-
     constructor() {
         _addSigner(msg.sender, msg.sender, "owner");
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -33,12 +23,10 @@ contract AccountControlMock is AccountControl, AccessControl {
         _addSigner(signer, account, _metadata);
     }
 
-    function removeSigner(address signer, string memory _metadata)
-        external
-        virtual
-        override
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function removeSigner(
+        address signer,
+        string memory _metadata
+    ) external virtual override onlyRole(DEFAULT_ADMIN_ROLE) {
         _removeSigner(signer, _metadata);
     }
 }
