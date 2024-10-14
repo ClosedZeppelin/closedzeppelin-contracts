@@ -9,8 +9,9 @@ import "openzeppelin-contracts/contracts/utils/Nonces.sol";
 import "openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
 import "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 import "openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
+import "closedzeppelin-contracts/utils/IMultisig.sol";
 
-abstract contract Multisig is Context, EIP712, Nonces, ReentrancyGuard {
+abstract contract Multisig is Context, EIP712, Nonces, ReentrancyGuard, IMultisig {
     bytes32 private immutable _EXECUTION_TYPEHASH =
         keccak256("Execute(bytes32 call,address sender,uint256 nonce,uint256 deadline)");
 
